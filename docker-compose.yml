@@ -1,0 +1,43 @@
+version: '3.8'
+services:
+  postgres:
+    image: postgres:14.1
+    restart: always
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=bravi-challenge
+    volumes:
+      - postgres:/var/lib/postgresql/data
+    ports:
+      - '5432:5432'
+  challenge-backend:
+    build:
+      context: ./back
+      dockerfile: Dockerfile
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/bravi-challenge?schema=public
+    ports:
+      - 4000:4000
+    volumes:
+      - ./back:/app
+    depends_on:
+      - postgres
+    links:
+      - postgres
+  challenge-frontend:
+    build:
+      context: ./front
+      dockerfile: Dockerfile
+    volumes:
+      - ./front:/app
+    environment:
+      NODE_ENV: development
+      REACT_APP_API_URL: http://localhost:4000
+    ports:
+      - 3000:3000
+    depends_on:
+      - challenge-backend
+volumes:
+  postgres:
+  
